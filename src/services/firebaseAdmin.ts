@@ -160,12 +160,29 @@ export async function verifyAdmin(idToken?: string) {
     const userEmail = (decodedToken.email || '').trim().toLowerCase();
     const isRoleAdmin = decodedToken.role === 'admin' || decodedToken.admin === true;
     
-    const isAdmin = userEmail === rawAdminEmail || isRoleAdmin;
+    // Check Firestore user collection
+    let isDbAdmin = false;
+    try {
+      const db = getAdminDb();
+      const userDoc = await db.collection('users').doc(decodedToken.uid).get();
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        if (userData && userData.role === 'admin') {
+          isDbAdmin = true;
+          console.log(`[verifyAdmin] Found admin role in firestore database for ${userEmail}`);
+        }
+      }
+    } catch (fsErr: any) {
+      console.warn(`[verifyAdmin] Failed to check Firestore user role:`, fsErr.message);
+    }
+    
+    const isAdmin = userEmail === rawAdminEmail || isRoleAdmin || isDbAdmin;
     
     console.log(`[verifyAdmin] Auth Evaluation:
       User Email: "${userEmail}"
       Target Admin: "${rawAdminEmail}"
       Role: ${decodedToken.role}
+      DbAdmin: ${isDbAdmin}
       Match: ${isAdmin}
     `);
     
@@ -186,8 +203,24 @@ export async function verifyUser(idToken?: string, userId?: string) {
   try {
     getAdminApp(); // Ensure app is initialized
     const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const adminEmail = process.env.ADMIN_EMAIL || 'baliadventours@gmail.com';
-    if (decodedToken.email === adminEmail || decodedToken.role === 'admin') return true;
+    const adminEmail = (process.env.ADMIN_EMAIL || 'baliadventours@gmail.com').trim().toLowerCase();
+    const userEmail = (decodedToken.email || '').trim().toLowerCase();
+    if (userEmail === adminEmail || decodedToken.role === 'admin' || decodedToken.admin === true) return true;
+    
+    // Check Firestore user collection
+    try {
+      const db = getAdminDb();
+      const userDoc = await db.collection('users').doc(decodedToken.uid).get();
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        if (userData && userData.role === 'admin') {
+          return true;
+        }
+      }
+    } catch (fsErr) {
+      // ignore
+    }
+    
     return decodedToken.uid === userId;
   } catch (e) {
     return false;
