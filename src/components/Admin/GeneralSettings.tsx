@@ -68,8 +68,43 @@ export default function GeneralSettings() {
     async function fetchSettings() {
       const docRef = doc(db, 'settings', 'general');
       const snap = await getDoc(docRef);
+      const defaultSettings: SiteSettings = {
+        siteName: 'Bali Adventours',
+        siteDescription: 'Premium Bali Tours & Adventure Experiences',
+        siteKeywords: 'bali, tours, adventure, trekking, mount batur, waterfalls',
+        supportEmail: 'baliadventours@gmail.com',
+        supportPhone: '+62 812-3456-7890',
+        whatsappNumber: '+62 812-3456-7890',
+        logoURL: '',
+        faviconURL: '',
+        officeAddress: 'Jl. Raya Ubud, Gianyar, Bali, Indonesia 80571',
+        primaryColor: '#00A651',
+        secondaryColor: '#ffffff',
+        bodyFont: 'Inter',
+        headingFont: 'Space Grotesk',
+        currency: 'USD',
+        themeMode: 'default',
+        sectionStyles: {
+          topNav: '',
+          mainNav: '',
+          hero: '',
+          featuredTours: '',
+          guestFavorites: '',
+          reviews: '',
+          inspiration: '',
+          footer: '',
+          aboutPage: '',
+          contactPage: '',
+          blogPage: '',
+        }
+      };
       if (snap.exists()) {
-        setSettings(snap.data() as SiteSettings);
+        setSettings({
+          ...defaultSettings,
+          ...snap.data()
+        } as SiteSettings);
+      } else {
+        setSettings(defaultSettings);
       }
       setLoading(false);
     }

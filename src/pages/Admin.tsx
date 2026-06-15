@@ -30,7 +30,7 @@ import {
   User, CheckCircle2, AlertCircle, FileCode, Terminal, ChevronLeft,
   Share2, Printer, XCircle, ExternalLink, UserCheck, ArrowRight,
   ArrowLeft, Clock4, Ban, Bot,
-  Zap, Send, Mail, Search
+  Zap, Send, Mail, Search, RefreshCw
 } from 'lucide-react';
 
 import { cn, formatPrice } from '../lib/utils';
