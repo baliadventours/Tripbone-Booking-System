@@ -10,9 +10,9 @@ let adminDb: any = null;
 export function getAdminApp() {
   if (adminApp) return adminApp;
   console.log(`[Firebase Admin] Root Path: ${process.cwd()}`);
-  let firebaseConfig: any = { 
-    projectId: process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID 
-  };
+  
+  // Set default from env first
+  let targetProjectId = process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID;
   
   try {
     const rootPath = process.cwd();
@@ -32,29 +32,21 @@ export function getAdminApp() {
 
     if (fs.existsSync(configPath)) {
       const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
-      firebaseConfig.projectId = config.projectId || firebaseConfig.projectId;
+      // Env variables take precedence, otherwise fallback to config file
+      targetProjectId = targetProjectId || config.projectId;
     }
   } catch (e) {
     // Silent catch
   }
 
-  console.log(`[Firebase Admin] Project Profile: ${firebaseConfig.projectId}`);
-  if (process.env.GOOGLE_CLOUD_PROJECT && process.env.GOOGLE_CLOUD_PROJECT !== firebaseConfig.projectId) {
-    console.log(`[Firebase Admin] Detected environment project mismatch: ADC=${process.env.GOOGLE_CLOUD_PROJECT}, Targeting=${firebaseConfig.projectId}`);
+  const projectId = targetProjectId || "remixed-project-id";
+  console.log(`[Firebase Admin] Project Profile: ${projectId}`);
+  if (process.env.GOOGLE_CLOUD_PROJECT && process.env.GOOGLE_CLOUD_PROJECT !== projectId) {
+    console.log(`[Firebase Admin] Detected environment project mismatch: ADC=${process.env.GOOGLE_CLOUD_PROJECT}, Targeting=${projectId}`);
   }
   
-  if (admin.apps.length > 0) {
-    const existingApp = admin.app();
-    if (existingApp.options.projectId === firebaseConfig.projectId) {
-      return existingApp;
-    }
-    // Delete and re-init if projectId changed (e.g. after env var update)
-    console.log(`[Firebase Admin] Project ID changed from ${existingApp.options.projectId} to ${firebaseConfig.projectId}. Re-initializing.`);
-    existingApp.delete();
-  }
-
   const options: admin.AppOptions = {
-    projectId: firebaseConfig.projectId
+    projectId: projectId
   };
 
   // Support Service Account if provided as JSON string in environment
@@ -68,8 +60,9 @@ export function getAdminApp() {
       if (saJson && typeof saJson === 'object' && !Array.isArray(saJson)) {
         options.credential = admin.credential.cert(saJson);
         console.log(`[Firebase Admin] SUCCESS: Using service account email: ${saJson.client_email}`);
-        if (saJson.project_id && saJson.project_id !== options.projectId) {
-          console.warn(`[Firebase Admin] WARNING: Project ID mismatch! Env Config: ${options.projectId}, Service Account: ${saJson.project_id}`);
+        if (saJson.project_id) {
+          options.projectId = saJson.project_id;
+          console.log(`[Firebase Admin] Setting projectId to match Service Account project_id: ${options.projectId}`);
         }
       } else {
         throw new Error("FIREBASE_SERVICE_ACCOUNT must be a JSON object.");
@@ -87,6 +80,16 @@ export function getAdminApp() {
     console.warn("[Firebase Admin] Falling back to default credentials (ADC).");
   }
 
+  if (admin.apps.length > 0) {
+    const existingApp = admin.app();
+    if (existingApp.options.projectId === options.projectId) {
+      return existingApp;
+    }
+    // Delete and re-init if projectId changed (e.g. after env var update)
+    console.log(`[Firebase Admin] Project ID changed from ${existingApp.options.projectId} to ${options.projectId}. Re-initializing.`);
+    existingApp.delete();
+  }
+
   console.log(`[Firebase Admin] Initializing app for project: ${options.projectId}`);
   adminApp = admin.initializeApp(options);
   return adminApp;
@@ -96,7 +99,7 @@ export function getAdminDb() {
   if (adminDb) return adminDb;
   const app = getAdminApp();
   
-  let databaseId = process.env.FIREBASE_DATABASE_ID || process.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || '(default)';
+  let databaseId = process.env.FIREBASE_DATABASE_ID || process.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID;
   let configSource = 'env';
 
   try {
@@ -119,7 +122,7 @@ export function getAdminDb() {
 
     if (configPath) {
       const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
-      if (config.firestoreDatabaseId) {
+      if (config.firestoreDatabaseId && !databaseId) {
         databaseId = config.firestoreDatabaseId;
         configSource = `file:${configPath}`;
       }
@@ -128,6 +131,7 @@ export function getAdminDb() {
     console.warn(`[Firebase Admin] Warning: Could not detect databaseId from config file: ${e.message}`);
   }
 
+  databaseId = databaseId || '(default)';
   console.log(`[Firebase Admin] Using database: ${databaseId} (Source: ${configSource})`);
   try {
     adminDb = getFirestore(app, databaseId);
