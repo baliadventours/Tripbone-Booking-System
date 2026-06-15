@@ -42,6 +42,8 @@ const THEME_OPTIONS = [
   { id: 'premium-full', name: 'Premium Full-bleed', category: 'Premium' },
   { id: 'saas-clean', name: 'SaaS Clean', category: 'SaaS' },
   { id: 'saas-dash', name: 'SaaS Dashboard', category: 'SaaS' },
+  { id: 'iceland-marketplace', name: 'Iceland Marketplace (Guide to Iceland)', category: 'Marketplace' },
+  { id: 'troll-adventure', name: 'Troll Adventure (Troll.is)', category: 'Adventure' },
 ];
 
 const SECTIONS = [

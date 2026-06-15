@@ -331,6 +331,11 @@ export default function Home() {
   });
   const [selectedMobileCategory, setSelectedMobileCategory] = useState("all");
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  const [icelandActiveTab, setIcelandActiveTab] = useState<'tours' | 'cars' | 'hotels' | 'flights'>('tours');
+  const [icelandKeyword, setIcelandKeyword] = useState('');
+  const [icelandStartDate, setIcelandStartDate] = useState('');
+  const [icelandEndDate, setIcelandEndDate] = useState('');
+  const [icelandGuests, setIcelandGuests] = useState('1 traveler');
 
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>(() => {
@@ -507,6 +512,274 @@ export default function Home() {
 
   const renderHero = () => {
     switch (heroStyle) {
+      case "iceland-marketplace": {
+        const handleIcelandSearch = (e: React.FormEvent) => {
+          e.preventDefault();
+          const params = new URLSearchParams();
+          if (icelandKeyword.trim()) params.append('search', icelandKeyword.trim());
+          if (icelandStartDate) params.append('startDate', icelandStartDate);
+          if (icelandEndDate) params.append('endDate', icelandEndDate);
+          if (icelandGuests) params.append('guests', icelandGuests);
+          navigate(`/tours?${params.toString()}`);
+        };
+
+        return (
+          <section className="relative min-h-screen flex flex-col justify-center py-24 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${settings?.ogImage || 'https://i.ibb.co.com/pvLCVYkM/ALAS-HARUM8-optimized.webp'})` }}>
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
+            <div className="relative z-10 w-full max-w-7xl mx-auto px-6 text-center text-white flex flex-col justify-center items-center space-y-10">
+              
+              {/* Title & Subtitle */}
+              <div className="max-w-4xl space-y-4">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight drop-shadow-md">
+                  Everything you need, all in one place, for your dream Balinese adventure
+                </h1>
+                <p className="text-base md:text-lg text-gray-200 font-medium max-w-2xl mx-auto drop-shadow-sm">
+                  As Bali's largest travel marketplace, we search over fifty local operators to find you the best deals — combined with our bulletproof price guarantee.
+                </p>
+              </div>
+
+              {/* Laurels / Awards logos */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10 text-xs font-black uppercase tracking-wider text-amber-400">
+                <div className="flex items-center gap-3 bg-black/35 backdrop-blur-md py-2 px-4 rounded-xl border border-white/10">
+                  <LucideIcons.Award className="h-5 w-5 text-amber-400" />
+                  <span>Best Price Guarantee</span>
+                </div>
+                <div className="flex items-center gap-3 bg-black/35 backdrop-blur-md py-2 px-4 rounded-xl border border-white/10">
+                  <LucideIcons.Award className="h-5 w-5 text-amber-400" />
+                  <span>Bali's Leading Travel Agency</span>
+                </div>
+              </div>
+
+              {/* Tabbed Search widget */}
+              <div className="w-full max-w-4xl bg-white/95 backdrop-blur-lg p-6 rounded-3xl shadow-[0_32px_60px_-15px_rgba(0,0,0,0.5)] text-gray-900 border border-white/25">
+                {/* Tabs */}
+                <div className="flex items-center border-b border-gray-150 pb-4 mb-5 gap-3 overflow-x-auto no-scrollbar">
+                  {(['tours', 'cars', 'hotels', 'flights'] as const).map((tab) => {
+                    const isActive = icelandActiveTab === tab;
+                    return (
+                      <button
+                        key={tab}
+                        type="button"
+                        onClick={() => setIcelandActiveTab(tab)}
+                        className={cn(
+                          "px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest transition-all duration-200 shrink-0",
+                          isActive 
+                            ? "bg-primary text-white shadow-md shadow-primary/25" 
+                            : "bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-900"
+                        )}
+                      >
+                        {tab === 'tours' && <span className="flex items-center gap-2"><LucideIcons.Compass className="h-3.5 w-3.5" /> Tours</span>}
+                        {tab === 'cars' && <span className="flex items-center gap-2"><LucideIcons.Car className="h-3.5 w-3.5" /> Cars</span>}
+                        {tab === 'hotels' && <span className="flex items-center gap-2"><LucideIcons.Building className="h-3.5 w-3.5" /> Hotels</span>}
+                        {tab === 'flights' && <span className="flex items-center gap-2"><LucideIcons.Plane className="h-3.5 w-3.5" /> Flights</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Tab Input Panel */}
+                <form onSubmit={handleIcelandSearch} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                  
+                  {/* Experience Selector */}
+                  <div className="md:col-span-4 text-left space-y-1">
+                    <label className="text-[10px] font-black uppercase text-gray-400 pl-1 tracking-wider">Choose your perfect experience</label>
+                    <div className="relative">
+                      <LucideIcons.MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <input 
+                        type="text" 
+                        placeholder={icelandActiveTab === 'tours' ? 'e.g. Mount Batur, Ubud...' : `e.g. Search ${icelandActiveTab}...`}
+                        value={icelandKeyword}
+                        onChange={(e) => setIcelandKeyword(e.target.value)}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-3 text-sm font-semibold text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Start Date */}
+                  <div className="md:col-span-2.5 text-left space-y-1">
+                    <label className="text-[10px] font-black uppercase text-gray-400 pl-1 tracking-wider">Starting date</label>
+                    <div className="relative">
+                      <LucideIcons.Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                      <input 
+                        type="date" 
+                        value={icelandStartDate}
+                        onChange={(e) => setIcelandStartDate(e.target.value)}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-3 py-3 text-xs font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                      />
+                    </div>
+                  </div>
+
+                  {/* End Date */}
+                  <div className="md:col-span-2.5 text-left space-y-1">
+                    <label className="text-[10px] font-black uppercase text-gray-400 pl-1 tracking-wider">Final date</label>
+                    <div className="relative">
+                      <LucideIcons.Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                      <input 
+                        type="date" 
+                        value={icelandEndDate}
+                        onChange={(e) => setIcelandEndDate(e.target.value)}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-3 py-3 text-xs font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Travelers Dropdown */}
+                  <div className="md:col-span-2 text-left space-y-1">
+                    <label className="text-[10px] font-black uppercase text-gray-400 pl-1 tracking-wider">Add travelers</label>
+                    <div className="relative">
+                      <LucideIcons.Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <select 
+                        value={icelandGuests} 
+                        onChange={(e) => setIcelandGuests(e.target.value)}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-2 py-3 text-xs font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/30 appearance-none"
+                      >
+                        <option value="1 traveler">1 traveler</option>
+                        <option value="2 travelers">2 travelers</option>
+                        <option value="3-5 travelers">3-5 travelers</option>
+                        <option value="6+ travelers">Group (6+)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Search Button */}
+                  <div className="md:col-span-1 flex items-end h-full pt-4 md:pt-0">
+                    <button 
+                      type="submit" 
+                      className="w-full bg-[#00A651] hover:brightness-95 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <LucideIcons.Search className="h-4 w-4 stroke-[2.5]" />
+                      <span className="md:hidden">Search</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Confidence elements row */}
+              <div className="w-full max-w-4xl grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-white/10 text-white/80">
+                <div className="flex items-center justify-center gap-2 text-xs font-bold">
+                  <LucideIcons.CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <span>Largest Tour Selection</span>
+                </div>
+                <div className="flex items-center justify-center gap-2 text-xs font-bold">
+                  <LucideIcons.CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <span>Best Price Guarantee</span>
+                </div>
+                <div className="flex items-center justify-center gap-2 text-xs font-bold">
+                  <LucideIcons.CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <span>Free Cancellation</span>
+                </div>
+                <div className="flex items-center justify-center gap-2 text-xs font-bold">
+                  <LucideIcons.CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <span>Verified 4.9★ Reviews</span>
+                </div>
+              </div>
+
+            </div>
+          </section>
+        );
+      }
+
+      case "troll-adventure": {
+        const sliceTours = tours.slice(0, 5);
+        return (
+          <section className="relative min-h-[95vh] bg-[#f7f9fa] flex flex-col justify-end text-zinc-900 overflow-hidden w-full pt-28 pb-12">
+            
+            {/* Sliced Accordion Columns background */}
+            <div className="absolute inset-0 w-full h-full flex flex-row items-stretch select-none pointer-events-auto">
+              {sliceTours.map((t, idx) => {
+                const img = t.featuredImage || t.gallery?.[0] || `https://picsum.photos/seed/${t.id}/800/1000`;
+                return (
+                  <Link 
+                    key={t.id}
+                    to={`/tour/${t.slug || t.id}`}
+                    className="flex-1 hover:flex-[1.8] group relative overflow-hidden transition-all duration-700 ease-out border-r border-[#f7f9fa]"
+                  >
+                    <div className="absolute inset-0">
+                      <img 
+                        src={img} 
+                        alt={t.title} 
+                        className="w-full h-full object-cover filter brightness-[0.45] group-hover:scale-105 group-hover:brightness-[0.65] transition-all duration-700" 
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 opacity-70" />
+                    
+                    <div className="absolute bottom-16 inset-x-4 flex flex-col items-center group-hover:items-start group-hover:pl-4 transition-all z-20 text-white">
+                      <span className="text-[10px] uppercase tracking-widest font-black text-amber-400 bg-black/45 px-2.5 py-1 rounded border border-white/5 whitespace-nowrap mb-2 max-w-min block font-mono">
+                        Experience 0{idx+1}
+                      </span>
+                      <h4 className="text-center group-hover:text-left text-sm md:text-base font-bold leading-tight tracking-tight max-w-[150px] group-hover:max-w-xs transition-all flex items-center gap-2 uppercase font-sans">
+                        {t.title}
+                      </h4>
+                      <p className="hidden group-hover:block text-[11px] text-gray-300 font-bold mt-2 leading-snug line-clamp-2 max-w-xs animate-in fade-in slide-in-from-bottom-2 duration-350">
+                        {t.description}
+                      </p>
+                      <span className="hidden group-hover:inline-flex items-center gap-1.5 text-[10px] text-sky-400 font-black mt-3 uppercase tracking-wider animate-in fade-in slide-in-from-bottom-2 duration-350">
+                        View Tour <LucideIcons.ArrowRight className="h-3 w-3" />
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Float overlay content */}
+            <div className="relative z-20 w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 text-white pointer-events-none mt-auto">
+              
+              <div className="lg:col-span-8 flex flex-col justify-end space-y-6 text-left">
+                <div className="inline-flex self-start items-center gap-2 bg-[#fbc02d] text-gray-900 py-1.5 px-4 rounded-lg text-[10px] md:text-xs font-black uppercase tracking-wider shadow-md pointer-events-auto hover:scale-[1.02] transition-transform">
+                  <LucideIcons.Trophy className="h-4.5 w-4.5 text-gray-901 fill-gray-900 shrink-0" />
+                  <span>Most Rewarded Bali Excursions</span>
+                </div>
+
+                <div className="space-y-3">
+                  <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter leading-tight uppercase font-sans drop-shadow-lg">
+                    Best of Bali <br />in 3 Days
+                  </h1>
+                  <h3 className="text-lg md:text-xl font-bold tracking-tight text-gray-200 drop-shadow-md">
+                    Classic Highlands + Mount Batur Sunrise Trek + Secret Waterfalls
+                  </h3>
+                </div>
+
+                <div className="pointer-events-auto pt-2">
+                  <Link 
+                    to={sliceTours[0] ? `/tour/${sliceTours[0].slug || sliceTours[0].id}` : '/tours'}
+                    className="inline-flex items-center gap-3 bg-[#0288d1] hover:bg-[#01579b] text-white py-4 px-10 rounded-full font-black text-xs uppercase tracking-widest shadow-xl shadow-sky-500/10 transition-all hover:scale-105 active:scale-95 group"
+                  >
+                    <span>Book Your Adventure</span>
+                    <LucideIcons.ChevronRight className="h-4.5 w-4.5 group-hover:translate-x-1.5 transition-transform" />
+                  </Link>
+                </div>
+              </div>
+
+              <div className="lg:col-span-12 grid grid-cols-1 md:grid-cols-2 gap-4 pt-10 border-t border-white/10 text-white/90">
+                <div className="flex items-center gap-4 bg-black/40 backdrop-blur-md p-4 rounded-2xl border border-white/10 pointer-events-auto hover:backdrop-blur-lg transition-all">
+                  <div className="p-2 bg-emerald-500 rounded-xl text-white">
+                    <LucideIcons.Award className="h-6 w-6 stroke-[2]" />
+                  </div>
+                  <div className="text-left">
+                    <span className="block text-[10px] font-black uppercase tracking-widest text-emerald-400">Tripadvisor Choice</span>
+                    <span className="text-xs font-black">Best of the Best: 2024, 2025, 2026</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 bg-black/40 backdrop-blur-md p-4 rounded-2xl border border-white/10 pointer-events-auto hover:backdrop-blur-lg transition-all">
+                  <div className="p-2 bg-amber-500 rounded-xl text-white flex items-center select-none font-bold text-xs gap-1">
+                    <span>4.9</span>
+                    <LucideIcons.Star className="h-3.5 w-3.5 fill-current" />
+                  </div>
+                  <div className="text-left">
+                    <span className="block text-[10px] font-black uppercase tracking-widest text-amber-500 font-mono">Global Score</span>
+                    <span className="text-xs font-black">40,000+ Real Reviews Across Platforms</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+        );
+      }
+
       case "airbnb-classic":
       case "airbnb-fluid": {
         const getPhotoTourLink = (keyword: string, fallbackTerm: string) => {
@@ -920,6 +1193,246 @@ export default function Home() {
 
   const renderFeaturedTours = () => {
     switch (featuredToursStyle) {
+      case "iceland-marketplace":
+        return (
+          <section className="py-24 bg-gray-50/50 border-y border-gray-150">
+            <div className="container mx-auto px-6 max-w-7xl">
+              <div className="flex flex-col lg:flex-row gap-12">
+                
+                {/* Left side Guide to Iceland inspired Sidebar info panel */}
+                <div className="lg:w-1/4 space-y-6">
+                  <div>
+                    <span className="text-[10px] font-black uppercase text-[#00A651] tracking-widest block mb-1">
+                      Traveler Marketplace
+                    </span>
+                    <h2 className="text-3xl font-extrabold text-gray-905 tracking-tight font-sans leading-tight">
+                      Curated Bali <br />Expeditions
+                    </h2>
+                  </div>
+                  
+                  <p className="text-xs text-gray-500 font-bold leading-relaxed">
+                    We search across dozens of top-tier licensed local operators and expert guides to package highly comprehensive day plans with the absolute best price guaranteed.
+                  </p>
+
+                  {/* Trust Indicators widget block */}
+                  <div className="p-5 bg-white rounded-2xl border border-gray-150 space-y-4">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-gray-800 border-b border-gray-100 pb-2">
+                      Why Book With Us?
+                    </h4>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3 text-xs font-bold text-gray-700">
+                        <LucideIcons.CheckCircle2 className="h-4.5 w-4.5 text-[#00A651] shrink-0 mt-0.5" />
+                        <div>
+                          <span className="block font-black text-[12.5px]">Best Price Guarantee</span>
+                          <span className="text-[10px] text-gray-400">Found cheaper? We match it + 5% off</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-3 text-xs font-bold text-gray-700">
+                        <LucideIcons.CheckCircle2 className="h-4.5 w-4.5 text-[#00A651] shrink-0 mt-0.5" />
+                        <div>
+                          <span className="block font-black text-[12.5px]">Free Cancellation</span>
+                          <span className="text-[10px] text-gray-400">Up to 24 hours in advance for full refund</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3 text-xs font-bold text-gray-700">
+                        <LucideIcons.CheckCircle2 className="h-4.5 w-4.5 text-[#00A651] shrink-0 mt-0.5" />
+                        <div>
+                          <span className="block font-black text-[12.5px]">Premium Local Support</span>
+                          <span className="text-[10px] text-gray-400">24/7 client dispatch hotline access</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Link
+                    to="/tours"
+                    className="inline-flex items-center gap-2 text-xs font-black text-[#00A651] hover:underline"
+                  >
+                    <span>View all available trips</span>
+                    <LucideIcons.ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+
+                {/* Right side compact Grid layout */}
+                <div className="lg:w-3/4">
+                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {filteredTours.slice(0, 6).map((tour, index) => {
+                      const discountPrice = tour.discountPrice || tour.regularPrice;
+                      const hasDiscount = tour.regularPrice && tour.discountPrice && (tour.regularPrice > tour.discountPrice);
+                      return (
+                        <div key={tour.id} className="bg-white rounded-2xl overflow-hidden border border-gray-150 hover:shadow-xl hover:border-gray-305 transition-all duration-300 flex flex-col group text-left">
+                          
+                          {/* Image area with badge */}
+                          <div className="relative aspect-[16/10] overflow-hidden bg-gray-100">
+                            <SmartImage 
+                              src={tour.featuredImage || tour.gallery?.[0]} 
+                              alt={tour.title}
+                              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                              aspectRatio="auto"
+                            />
+                            {tour.isPopular && (
+                              <span className="absolute top-3 left-3 bg-[#00A651] text-white text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider shadow-sm">
+                                Best Seller
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Content area */}
+                          <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                            <div className="space-y-1.5">
+                              <span className="text-[9px] font-black uppercase text-gray-400 tracking-wider font-mono">
+                                {tour.duration} / English Verified
+                              </span>
+                              <h3 className="text-sm font-extrabold text-gray-905 line-clamp-2 leading-snug group-hover:text-[#00A651] transition-colors font-sans">
+                                {tour.title}
+                              </h3>
+                              
+                              {/* Green star rating bar */}
+                              <div className="flex items-center gap-1.5 text-xs text-gray-600 font-bold">
+                                <span className="flex items-center gap-0.5 text-[#00A651]">
+                                  {[...Array(5)].map((_, i) => (
+                                    <LucideIcons.Star key={i} className="h-3 w-3 fill-[#00A651] text-[#00A651]" />
+                                  ))}
+                                </span>
+                                <span>{tour.rating?.toFixed(1) || '4.9'} ({tour.reviewsCount || 112})</span>
+                              </div>
+                            </div>
+
+                            {/* Price action row */}
+                            <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-auto">
+                              <div className="flex flex-col text-left">
+                                <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Total Price</span>
+                                <div className="flex items-baseline gap-1">
+                                  <span className="text-base font-extrabold text-gray-950">
+                                    <FormattedPrice amount={discountPrice} />
+                                  </span>
+                                  {hasDiscount && (
+                                    <span className="text-xs font-bold text-gray-400 line-through">
+                                      <FormattedPrice amount={tour.regularPrice} />
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <Link 
+                                to={`/tour/${tour.slug || tour.id}`}
+                                className="bg-gray-100 group-hover:bg-[#00A651] text-gray-700 group-hover:text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors"
+                              >
+                                Book Now
+                              </Link>
+                            </div>
+                          </div>
+
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+        );
+
+      case "troll-adventure":
+        return (
+          <section className="py-24 bg-white border-b border-gray-150">
+            <div className="container mx-auto px-6 max-w-7xl">
+              
+              {/* Troll.is inspired Heading & subtitle */}
+              <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+                <span className="bg-[#00b0ff]/10 text-[#0288d1] text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest inline-block font-mono">
+                  Guaranteed Departures
+                </span>
+                <h2 className="text-3xl md:text-5xl font-extrabold text-gray-901 tracking-tighter uppercase font-sans">
+                  Popular Bali Adventure Tours
+                </h2>
+                <div className="h-1.5 w-16 bg-[#00b0ff] mx-auto rounded-full" />
+                <p className="text-xs text-gray-500 font-bold max-w-lg mx-auto">
+                  With our adventure-style packages, you get expert certified guides, small group guarantees, and top safety gear.
+                </p>
+              </div>
+
+              {/* 3-column rows of bold vertical cards */}
+              <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredTours.slice(0, 3).map((tour, index) => {
+                  const discountPrice = tour.discountPrice || tour.regularPrice;
+                  const hasDiscount = tour.regularPrice && tour.discountPrice && (tour.regularPrice > tour.discountPrice);
+                  return (
+                    <div key={tour.id} className="bg-[#f8f9fa] rounded-3xl overflow-hidden shadow-sm hover:shadow-xl border border-gray-200 transition-all duration-300 flex flex-col text-left hover:-translate-y-1">
+                      
+                      {/* Rich details image container */}
+                      <div className="relative aspect-[16/11] overflow-hidden bg-gray-250">
+                        <SmartImage 
+                          src={tour.featuredImage || tour.gallery?.[0]} 
+                          alt={tour.title}
+                          className="w-full h-full object-cover transition-transform duration-700 ease-out hover:scale-105"
+                          aspectRatio="auto"
+                        />
+                        {/* Rating block overlay */}
+                        <div className="absolute bottom-3 left-3 bg-black/75 backdrop-blur-md text-white py-1.5 px-3 rounded-xl flex items-center gap-1.5 text-xs font-black border border-white/10">
+                          <LucideIcons.Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500 shrink-0" />
+                          <span>{tour.rating?.toFixed(1) || '4.9'}</span>
+                          <span className="text-[10px] text-gray-400 font-bold">({tour.reviewsCount || 88})</span>
+                        </div>
+                        {/* Highlighting label */}
+                        <span className="absolute top-3 right-3 bg-[#fbc02d] text-gray-901 text-[9px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider shadow-sm border border-white/10">
+                          Most Recommended
+                        </span>
+                      </div>
+
+                      {/* Content details */}
+                      <div className="p-6 flex-1 flex flex-col justify-between space-y-6">
+                        <div className="space-y-3">
+                          <h3 className="text-base font-extrabold uppercase tracking-tight text-gray-901 line-clamp-2 leading-snug group-hover:text-[#0288d1] transition-colors font-sans">
+                            {tour.title}
+                          </h3>
+                          <p className="text-xs text-gray-500 font-bold line-clamp-3 leading-relaxed">
+                            {tour.description}
+                          </p>
+
+                          {/* Green highlights feature band */}
+                          <div className="flex items-center gap-2 bg-[#e8f5e9] text-[#2e7d32] border border-[#a5d6a7]/30 py-2 px-3 rounded-xl text-[10.5px] font-bold">
+                            <LucideIcons.ShieldAlert className="h-4 w-4 text-[#2e7d32] shrink-0" />
+                            <span>Includes Full Safety Gear & Hot Lunch Buffet</span>
+                          </div>
+                        </div>
+
+                        {/* Booking action row */}
+                        <div className="flex items-center justify-between pt-4 border-t border-gray-200/60 mt-auto">
+                          <div className="flex flex-col text-left">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-gray-400 font-mono">From Only</span>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-xl font-extrabold text-gray-950">
+                                <FormattedPrice amount={discountPrice} />
+                              </span>
+                              {hasDiscount && (
+                                <span className="text-xs font-bold text-gray-400 line-through">
+                                  <FormattedPrice amount={tour.regularPrice} />
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <Link 
+                            to={`/tour/${tour.slug || tour.id}`}
+                            className="bg-[#0288d1] hover:bg-[#01579b] text-white py-3 px-6 rounded-full text-xs font-black uppercase tracking-wider shadow-md hover:scale-105 transition-all"
+                          >
+                            Book Now
+                          </Link>
+                        </div>
+                      </div>
+
+                    </div>
+                  );
+                })}
+              </div>
+
+            </div>
+          </section>
+        );
+
       case "airbnb-classic":
       case "airbnb-fluid":
         return (
