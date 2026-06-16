@@ -524,7 +524,17 @@ export default function Home() {
         };
 
         return (
-          <section className="relative min-h-screen flex flex-col justify-center py-24 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${settings?.ogImage || 'https://i.ibb.co.com/pvLCVYkM/ALAS-HARUM8-optimized.webp'})` }}>
+          <section className="relative min-h-screen flex flex-col justify-center py-24 bg-cover bg-center bg-no-repeat bg-zinc-950" style={{ backgroundImage: `url(${settings?.ogImage || 'https://i.ibb.co.com/pvLCVYkM/ALAS-HARUM8-optimized.webp'})` }}>
+            {videoId && isVideoLoaded && (
+              <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden hidden md:block">
+                <iframe
+                  src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&modestbranding=1&playlist=${videoId}&iv_load_policy=3&enablejsapi=1`}
+                  title="Hero Background Video"
+                  className="w-full h-full scale-[1.35] md:scale-[1.5]"
+                  allow="autoplay; encrypted-media"
+                />
+              </div>
+            )}
             <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
             <div className="relative z-10 w-full max-w-7xl mx-auto px-6 text-center text-white flex flex-col justify-center items-center space-y-10">
               
@@ -684,44 +694,92 @@ export default function Home() {
         return (
           <section className="relative min-h-[95vh] bg-[#f7f9fa] flex flex-col justify-end text-zinc-900 overflow-hidden w-full pt-28 pb-12">
             
-            {/* Sliced Accordion Columns background */}
-            <div className="absolute inset-0 w-full h-full flex flex-row items-stretch select-none pointer-events-auto">
-              {sliceTours.map((t, idx) => {
-                const img = t.featuredImage || t.gallery?.[0] || `https://picsum.photos/seed/${t.id}/800/1000`;
-                return (
-                  <Link 
-                    key={t.id}
-                    to={`/tour/${t.slug || t.id}`}
-                    className="flex-1 hover:flex-[1.8] group relative overflow-hidden transition-all duration-700 ease-out border-r border-[#f7f9fa]"
-                  >
-                    <div className="absolute inset-0">
-                      <img 
-                        src={img} 
-                        alt={t.title} 
-                        className="w-full h-full object-cover filter brightness-[0.45] group-hover:scale-105 group-hover:brightness-[0.65] transition-all duration-700" 
-                        referrerPolicy="no-referrer"
-                      />
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 opacity-70" />
-                    
-                    <div className="absolute bottom-16 inset-x-4 flex flex-col items-center group-hover:items-start group-hover:pl-4 transition-all z-20 text-white">
-                      <span className="text-[10px] uppercase tracking-widest font-black text-amber-400 bg-black/45 px-2.5 py-1 rounded border border-white/5 whitespace-nowrap mb-2 max-w-min block font-mono">
-                        Experience 0{idx+1}
-                      </span>
-                      <h4 className="text-center group-hover:text-left text-sm md:text-base font-bold leading-tight tracking-tight max-w-[150px] group-hover:max-w-xs transition-all flex items-center gap-2 uppercase font-sans">
-                        {t.title}
-                      </h4>
-                      <p className="hidden group-hover:block text-[11px] text-gray-300 font-bold mt-2 leading-snug line-clamp-2 max-w-xs animate-in fade-in slide-in-from-bottom-2 duration-350">
-                        {t.description}
-                      </p>
-                      <span className="hidden group-hover:inline-flex items-center gap-1.5 text-[10px] text-sky-400 font-black mt-3 uppercase tracking-wider animate-in fade-in slide-in-from-bottom-2 duration-350">
-                        View Tour <LucideIcons.ArrowRight className="h-3 w-3" />
-                      </span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
+            {/* Background Layer: YouTube Video on Desktop, Sliced Accordions on Mobile & fallback */}
+            {videoId && isVideoLoaded ? (
+              <>
+                {/* Mobile: Sliced Accordion Columns */}
+                <div className="absolute inset-0 w-full h-full flex flex-row items-stretch select-none pointer-events-auto md:hidden">
+                  {sliceTours.map((t, idx) => {
+                    const img = t.featuredImage || t.gallery?.[0] || `https://picsum.photos/seed/${t.id}/800/1000`;
+                    return (
+                      <Link 
+                        key={t.id}
+                        to={`/tour/${t.slug || t.id}`}
+                        className="flex-1 hover:flex-[1.8] group relative overflow-hidden transition-all duration-700 ease-out border-r border-[#f7f9fa]"
+                      >
+                        <div className="absolute inset-0">
+                          <img 
+                            src={img} 
+                            alt={t.title} 
+                            className="w-full h-full object-cover filter brightness-[0.45] group-hover:scale-105 group-hover:brightness-[0.65] transition-all duration-700" 
+                            referrerPolicy="no-referrer"
+                          />
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 opacity-70" />
+                        
+                        <div className="absolute bottom-16 inset-x-4 flex flex-col items-center group-hover:items-start group-hover:pl-4 transition-all z-20 text-white">
+                          <span className="text-[10px] uppercase tracking-widest font-black text-amber-400 bg-black/45 px-2.5 py-1 rounded border border-white/5 whitespace-nowrap mb-2 max-w-min block font-mono">
+                            Experience 0{idx+1}
+                          </span>
+                          <h4 className="text-center group-hover:text-left text-sm md:text-base font-bold leading-tight tracking-tight max-w-[150px] group-hover:max-w-xs transition-all flex items-center gap-2 uppercase font-sans">
+                            {t.title}
+                          </h4>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+                {/* Desktop: Full-bleed YouTube video background */}
+                <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden hidden md:block">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&modestbranding=1&playlist=${videoId}&iv_load_policy=3&enablejsapi=1`}
+                    title="Hero Background Video"
+                    className="w-full h-full scale-[1.35] md:scale-[1.5]"
+                    allow="autoplay; encrypted-media"
+                  />
+                  <div className="absolute inset-0 bg-black/45" />
+                </div>
+              </>
+            ) : (
+              /* Normal Accordion Columns background for all viewports (fallback) */
+              <div className="absolute inset-0 w-full h-full flex flex-row items-stretch select-none pointer-events-auto">
+                {sliceTours.map((t, idx) => {
+                  const img = t.featuredImage || t.gallery?.[0] || `https://picsum.photos/seed/${t.id}/800/1000`;
+                  return (
+                    <Link 
+                      key={t.id}
+                      to={`/tour/${t.slug || t.id}`}
+                      className="flex-1 hover:flex-[1.8] group relative overflow-hidden transition-all duration-700 ease-out border-r border-[#f7f9fa]"
+                    >
+                      <div className="absolute inset-0">
+                        <img 
+                          src={img} 
+                          alt={t.title} 
+                          className="w-full h-full object-cover filter brightness-[0.45] group-hover:scale-105 group-hover:brightness-[0.65] transition-all duration-700" 
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 opacity-70" />
+                      
+                      <div className="absolute bottom-16 inset-x-4 flex flex-col items-center group-hover:items-start group-hover:pl-4 transition-all z-20 text-white">
+                        <span className="text-[10px] uppercase tracking-widest font-black text-amber-400 bg-black/45 px-2.5 py-1 rounded border border-white/5 whitespace-nowrap mb-2 max-w-min block font-mono">
+                          Experience 0{idx+1}
+                        </span>
+                        <h4 className="text-center group-hover:text-left text-sm md:text-base font-bold leading-tight tracking-tight max-w-[150px] group-hover:max-w-xs transition-all flex items-center gap-2 uppercase font-sans">
+                          {t.title}
+                        </h4>
+                        <p className="hidden group-hover:block text-[11px] text-gray-300 font-bold mt-2 leading-snug line-clamp-2 max-w-xs animate-in fade-in slide-in-from-bottom-2 duration-350">
+                          {t.description}
+                        </p>
+                        <span className="hidden group-hover:inline-flex items-center gap-1.5 text-[10px] text-sky-400 font-black mt-3 uppercase tracking-wider animate-in fade-in slide-in-from-bottom-2 duration-350">
+                          View Tour <LucideIcons.ArrowRight className="h-3 w-3" />
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Float overlay content */}
             <div className="relative z-20 w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 text-white pointer-events-none mt-auto">
